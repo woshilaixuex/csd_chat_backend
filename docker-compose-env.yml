@@ -31,6 +31,24 @@ services:
     container_name: mysql-job-dbdata
     volumes:
       - /var/lib/mysql
+  redis:
+    image: redis:6.2.5
+    container_name: redis
+    restart: always
+    hostname: redis
+    privileged: true
+    ports:
+      - 16379:6379
+    volumes:
+      - ./data/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - csdchat-network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 networks:
   csdchat-network:

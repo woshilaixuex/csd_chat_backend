@@ -25,5 +25,6 @@ func InitEngine() error {
 	if err != nil {
 		return err
 	}
+	err = engine.Ping()
 	return err
 }

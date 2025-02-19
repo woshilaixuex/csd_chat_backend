@@ -1,9 +1,5 @@
 package manager
 
-import (
-	"fmt"
-)
-
 /*
  * @Author: Elyr1c
  * @Email: linyugang7295@gmail.com
@@ -11,14 +7,22 @@ import (
  * @Date: 2025-02-17 21:24
  */
 
-func GetUserByID(id uint) (*UserManager, error) {
-	user := &UserManager{}
-	has, err := engine.ID(id).Get(user)
+func GetUserByID(id uint) (user *UserManager, err error) {
+	_, err = engine.ID(id).Get(user)
 	if err != nil {
-		return nil, err
+		return
 	}
-	if !has {
-		return nil, fmt.Errorf("用户不存在")
+	return
+}
+func GetUserEmail(email string) (user *UserManager, err error) {
+	_, err = engine.Where("email = ?", email).Get(user)
+	if err != nil {
+		return
 	}
-	return user, nil
+	return
+}
+
+func InsertUser(user *UserManager) (err error) {
+	_, err = engine.Insert(user)
+	return
 }

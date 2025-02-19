@@ -14,14 +14,14 @@ CREATE TABLE `user_manager` (
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '账号创建时间',
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '账号更新时间',
     `invite_by` INT UNSIGNED DEFAULT NULL COMMENT '邀请人ID',
-    `status` ENUM('active', 'inactive', 'frozen') DEFAULT 'active' COMMENT '账号状态',
+    `status` ENUM('active', 'inactive', 'frozen') DEFAULT 'active' COMMENT '账号状态'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 DROP TABLE IF EXISTS `admin_manager`;
 CREATE TABLE `admin_manager` (
     `csd_id` INT UNSIGNED NOT NULL COMMENT '用户账号自增ID',
     `role_id` INT UNSIGNED NOT NULL COMMENT '身份的自增ID',
-    `invite_by` INT UNSIGNED NOT NULL COMMENT '邀请人',
+    `invite_by` INT UNSIGNED NOT NULL COMMENT '邀请人'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 DROP TABLE IF EXISTS `role_manager`;
