@@ -3,7 +3,10 @@ package user
 import (
 	"github.com/jinzhu/copier"
 	"github.com/woshilaixuex/csd_chat_backend/app/util/model/manager"
+	"github.com/woshilaixuex/csd_chat_backend/app/util/security/encryption"
+	"github.com/woshilaixuex/csd_chat_backend/app/util/security/xtoken"
 	"github.com/woshilaixuex/csd_chat_backend/app/util/xerr"
+	"github.com/woshilaixuex/csd_chat_backend/app/util/xredis"
 )
 
 /*
@@ -18,6 +21,7 @@ type RegisterEntity struct {
 	RealName    string
 	PhoneNumber string
 	Email       string
+	Salt        string
 	Password    string
 }
 
@@ -25,15 +29,32 @@ func (entity *RegisterEntity) HashPassword() string {
 	return entity.Password
 }
 
-func Register(entity RegisterEntity) (token string, err error) {
-	user, err := manager.GetUserEmail(entity.Email)
+// 项目初始化时重置root
+func RootInit() {
+
+}
+func Register(entity *RegisterEntity) (token string, err error) {
+	found, user, err := manager.GetUserEmail(entity.Email)
 	if err != nil {
 		return
 	}
-	if user != nil {
+	if found {
 		return token, xerr.UserExists
 	}
+	if !checkInvitCode("") {
+		return token, xerr.InviteError
+	}
+	salt, hash, err := encryption.EncryptPassword(entity.Password)
+	if err != nil {
+		return
+	}
+	entity.Salt = salt
+	entity.Password = hash
 	user = new(manager.UserManager)
+	user.CsdID, err = xredis.GetNewGlobalCsdID()
+	if err != nil {
+		return
+	}
 	err = copier.Copy(user, &entity)
 	if err != nil {
 		return
@@ -42,9 +63,9 @@ func Register(entity RegisterEntity) (token string, err error) {
 	if err != nil {
 		return
 	}
-
+	token, err = xtoken.GetJwtToken(user.CsdID)
 	return
 }
-func CheckInvitCode(code string) bool {
-	return true
+func checkInvitCode(code string) bool {
+	return code == ""
 }

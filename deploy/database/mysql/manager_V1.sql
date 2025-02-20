@@ -3,7 +3,7 @@ USE `manager`;
 
 DROP TABLE IF EXISTS `user_manager`;
 CREATE TABLE `user_manager` (
-    `csd_id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT '用户账号自增ID',
+    `csd_id` INT UNSIGNED NOT NULL PRIMARY KEY COMMENT '用户账号自增ID',
     `username` VARCHAR(255) NOT NULL UNIQUE COMMENT '用户名',
     `student_id` VARCHAR(20) NOT NULL UNIQUE COMMENT '学号',
     `real_name` VARCHAR(100) NOT NULL COMMENT '真实姓名',
@@ -39,9 +39,9 @@ CREATE TABLE `authorities_manager` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 插入默认的 root 用户
-INSERT INTO `user_manager` (`username`, `student_id`, `real_name`, `phone_number`, `email`, `salt`, `hash_password`, `status`)
+INSERT INTO `user_manager` (`csd_id`,`username`, `student_id`, `real_name`, `phone_number`, `email`, `salt`, `hash_password`, `status`)
 VALUES
-('root', '0', '超级管理员', '0', 'root@example.com', 'random_salt_value', 'hashed_password_value', 'active');
+('0','root', '0', '超级管理员', '0', 'root@example.com', 'random_salt_value', 'hashed_password_value', 'active');
 
 -- 插入权限数据
 INSERT INTO `authorities_manager` (`authorities_name`, `authorities_desc`) VALUES
@@ -60,4 +60,4 @@ VALUES ('root', '1,2,3,4,5,6,7,8'); -- 假设权限ID是1到8
 
 -- 插入 root 用户
 INSERT INTO `admin_manager` (`csd_id`, `role_id`, `invite_by`) 
-VALUES (1, 1, 1);
+VALUES (0, 1, 0);

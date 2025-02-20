@@ -6,5 +6,10 @@ package util
  * @Description: 全局变量
  * @Date: 2025-02-19 20:42
  */
+const (
+	CtxKeyJwtUserId = "jwtUserId"
+)
 
-var CtxKeyJwtUserId = "jwtUserId"
+const (
+	RedisGlobalCsdIdKey = "global_csd_id"
+)

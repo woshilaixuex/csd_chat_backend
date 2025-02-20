@@ -11,8 +11,9 @@ import (
 	"github.com/woshilaixuex/csd_chat_backend/app/manager/config"
 	"github.com/woshilaixuex/csd_chat_backend/app/manager/internal/user"
 	"github.com/woshilaixuex/csd_chat_backend/app/util/model/manager"
-	xredis "github.com/woshilaixuex/csd_chat_backend/app/util/redis"
+	"github.com/woshilaixuex/csd_chat_backend/app/util/security/encryption"
 	"github.com/woshilaixuex/csd_chat_backend/app/util/security/xtoken"
+	"github.com/woshilaixuex/csd_chat_backend/app/util/xredis"
 )
 
 /*
@@ -61,7 +62,7 @@ func TestUserManager(t *testing.T) {
 	err := manager.InitEngine()
 	assert.NoError(t, err)
 
-	user, err := manager.GetUserByID(1)
+	_, user, err := manager.GetUserByID(0)
 	assert.NoError(t, err)
 	t.Log(user)
 }
@@ -89,10 +90,9 @@ func TestCopier(t *testing.T) {
 func TestGetJwtToken(t *testing.T) {
 	xtoken.InitJwtToken()
 
-	userId := int64(12345)
+	userId := uint64(12345)
 	token, err := xtoken.GetJwtToken(userId)
 	t.Log(token)
-	// 断言
 	assert.NoError(t, err)
 	assert.NotEmpty(t, token)
 	time.Sleep(time.Second * 2)
@@ -104,4 +104,44 @@ func TestGetJwtToken(t *testing.T) {
 	claims, ok := parsedToken.Claims.(jwt.MapClaims)
 	assert.True(t, ok)
 	t.Log(claims)
+}
+
+// @Encrypt
+func TestEncrypt(t *testing.T) {
+	entity := &user.RegisterEntity{
+		UserName:    "nihao",
+		StudentID:   "11",
+		RealName:    "小明",
+		PhoneNumber: "1233",
+		Email:       "11@qq.com",
+		Password:    "123",
+	}
+	salt, hash, err := encryption.EncryptPassword(entity.Password)
+	if err != nil {
+		return
+	}
+	entity.Salt = salt
+	entity.Password = hash
+	user := new(manager.UserManager)
+	copier.Copy(user, entity)
+	t.Log(user)
+	isTrue := encryption.VerifyPassword(user.HashPassword, "123", entity.Salt)
+	t.Log(isTrue)
+}
+
+// @Serivce:user
+func TestSerivceUser(t *testing.T) {
+	manager.InitEngine()
+	xredis.InitRedisCli()
+	entity := &user.RegisterEntity{
+		UserName:    "nihao3",
+		StudentID:   "113",
+		RealName:    "小明",
+		PhoneNumber: "1233",
+		Email:       "131@qq.com",
+		Password:    "123",
+	}
+	token, err := user.Register(entity)
+	assert.NoError(t, err)
+	t.Log(token)
 }

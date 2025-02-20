@@ -41,8 +41,11 @@ func init() {
 	viper.AddConfigPath("../")
 	err := viper.ReadInConfig()
 	if err != nil {
-		log.Fatalln("Failed to read config file:", err)
+		log.Fatalf("Failed to read config file: %v", err)
+	} else {
+		log.Println("Config file loaded successfully")
 	}
+
 	AddConfigs(NewOrmConfig(),
-		NewRedisConfig())
+		NewRedisConfig(), NewTokenConfig())
 }

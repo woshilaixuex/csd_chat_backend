@@ -42,7 +42,7 @@ func InitJwtToken() {
 		panic(err)
 	}
 }
-func GetJwtToken(userId int64) (string, error) {
+func GetJwtToken(userId uint64) (string, error) {
 	if tokenOption == nil {
 		InitJwtToken()
 	}

@@ -44,10 +44,9 @@ func (e *AppError) Wrap(upe *AppError) error {
 		Err:     e,
 	}
 }
-func NewAppError(code uint, message string, err error) *AppError {
+func NewAppError(code uint, message string) *AppError {
 	return &AppError{
 		Code:    code,
 		Message: message,
-		Err:     err,
 	}
 }

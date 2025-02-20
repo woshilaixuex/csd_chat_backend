@@ -9,7 +9,8 @@ package xerr
 
 // 定义一些业务常见的错误
 var (
-	UnDefinedErr = &AppError{Code: 0000, Message: "undefind err"}
-	UserNotExist = &AppError{Code: 1001, Message: "user is not exist"}
-	UserExists   = &AppError{Code: 1002, Message: "user already exists"}
+	UnDefinedError = NewAppError(0000, "undefind err")
+	UserNotExist   = NewAppError(1001, "user is not exist")
+	UserExists     = NewAppError(1002, "user already exists")
+	InviteError    = NewAppError(1003, "invite code is error")
 )
