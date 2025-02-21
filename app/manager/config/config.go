@@ -47,5 +47,6 @@ func init() {
 	}
 
 	AddConfigs(NewOrmConfig(),
-		NewRedisConfig(), NewTokenConfig())
+		NewRedisConfig(),
+		NewTokenConfig())
 }

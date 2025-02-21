@@ -12,4 +12,6 @@ const (
 
 const (
 	RedisGlobalCsdIdKey = "global_csd_id"
+	RedisTotleOwner     = "owneruid_T"
+	RedisUserOwner      = "owneruid_U_"
 )

@@ -12,5 +12,6 @@ var (
 	UnDefinedError = NewAppError(0000, "undefind err")
 	UserNotExist   = NewAppError(1001, "user is not exist")
 	UserExists     = NewAppError(1002, "user already exists")
-	InviteError    = NewAppError(1003, "invite code is error")
+	TokenExpire    = NewAppError(1003, "token was expired")
+	InviteError    = NewAppError(1004, "invite code is error")
 )
