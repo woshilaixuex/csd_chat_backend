@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 	manager_config "github.com/woshilaixuex/csd_chat_backend/app/manager/config"
@@ -16,6 +17,12 @@ import (
  * @Description: redis客户端
  * @Date: 2025-02-18 18:50
  */
+
+type RedisLink struct {
+	redisDb *redis.Client
+	ctx     context.Context
+}
+
 var redisDb *redis.Client
 
 func InitRedisCli() error {
@@ -52,16 +59,24 @@ func GetNewGlobalCsdID() (uint64, error) {
 }
 func Set(key string, value interface{}) error {
 	var err error
-	_, err = redisDb.Ping(context.Background()).Result()
-	if err != nil {
-		return err
-	}
-	fmt.Print("ping is ok")
 	cmd := redisDb.Set(context.Background(), key, value, -1)
 	str, err := cmd.Result()
-	log.Print(str)
+	log.Printf("redis set key %s: %s", key, str)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+// 获取redis服务器的时间
+func GetTimeFromRedis() (time.Time, error) {
+	var err error
+	cmd := redisDb.Time(context.Background())
+	if err = cmd.Err(); err != nil {
+		return time.Time{}, err
+	}
+
+	time := cmd.Val()
+
+	return time, err
 }

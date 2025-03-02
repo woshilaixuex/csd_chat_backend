@@ -11,7 +11,8 @@ const (
 )
 
 const (
-	RedisGlobalCsdIdKey = "global_csd_id"
-	RedisTotleOwner     = "owneruid_T"
-	RedisUserOwner      = "owneruid_U_"
+	RedisGlobalCsdIdKey  = "global_csd_id"
+	RedisTotleOwner      = "owneruid_totle_" // 总未读数
+	RedisUserOwner       = "owneruid_U_"
+	RedisGlobalChatIdKey = "global_chat_id_"
 )

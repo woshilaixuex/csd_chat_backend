@@ -34,7 +34,7 @@ func RootInit() {
 
 }
 func Register(entity *RegisterEntity) (token string, err error) {
-	found, user, err := manager.GetUserEmail(entity.Email)
+	found, _, err := manager.GetUserEmail(entity.Email)
 	if err != nil {
 		return
 	}
@@ -50,12 +50,12 @@ func Register(entity *RegisterEntity) (token string, err error) {
 	}
 	entity.Salt = salt
 	entity.Password = hash
-	user = new(manager.UserManager)
+	user := new(manager.UserManager)
 	user.CsdID, err = xredis.GetNewGlobalCsdID()
 	if err != nil {
 		return
 	}
-	err = copier.Copy(user, &entity)
+	err = copier.Copy(user, entity)
 	if err != nil {
 		return
 	}

@@ -2,9 +2,7 @@ package test
 
 import (
 	"testing"
-	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/jinzhu/copier"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -94,16 +92,10 @@ func TestGetJwtToken(t *testing.T) {
 	token, err := xtoken.GetJwtToken(userId)
 	t.Log(token)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, token)
-	time.Sleep(time.Second * 2)
-	parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
-		return []byte("token"), nil
-	})
-	assert.NoError(t, err)
 
-	claims, ok := parsedToken.Claims.(jwt.MapClaims)
-	assert.True(t, ok)
-	t.Log(claims)
+	id, err := xtoken.ParseJwtToken(token)
+	assert.NoError(t, err)
+	t.Log(id)
 }
 
 // @Encrypt
