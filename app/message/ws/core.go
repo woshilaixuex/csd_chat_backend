@@ -15,9 +15,10 @@ import (
  * @Date: 2025-03-02 21:50
  */
 var (
-	maxClient      int   = 300              // 最大连接数
-	maxLinkTimeNum       = 6                // 重试次数
-	maxLinkTime          = time.Second * 20 // 最大重试时长
+	maxClient      int   = 300             // 最大连接数
+	maxLinkTimeNum       = 6               // 重试次数
+	maxLinkTime          = time.Minute * 5 // 最大重试时长
+	maxPingTime          = time.Second * 20
 	maxMessageSize int64 = 512
 	Line                 = []byte{'\n'}
 	Space                = []byte{' '}
