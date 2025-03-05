@@ -1,7 +1,6 @@
 package ws
 
 import (
-	"context"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -10,6 +9,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
+
+/*
+ * @Author: Elyr1c
+ * @Email: linyugang7295@gmail.com
+ * @Description: 聊天服务
+ * @Date: 2025-03-05 21:14
+ */
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -20,23 +26,14 @@ var upgrader = websocket.Upgrader{
 }
 
 func WebSocketHandler(c *gin.Context) {
-	userID := c.MustGet("userID").(int64)
-
+	userID := c.MustGet("userID").(uint64)
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Printf("WebSocket upgrader fail: %v", err)
 		return
 	}
 
-	ctx := context.Background()
-	client := &WSClient{
-		WSID:     userID,
-		Conn:     conn,
-		Ctx:      ctx,
-		Send:     make(chan []byte, 20),
-		LastSeen: time.Now(),
-	}
-
+	client := NewWSClinet(userID, conn)
 	DefaultClientManager.register <- client
 	go client.readPump()
 	go client.writePump()
@@ -47,7 +44,6 @@ func (c *WSClient) readPump() {
 		DefaultClientManager.unregister <- c
 		c.Conn.Close()
 	}()
-
 	c.Conn.SetReadLimit(maxMessageSize)
 	c.Conn.SetReadDeadline(time.Now().Add(maxLinkTime))
 	c.Conn.SetPongHandler(func(string) error {
@@ -64,12 +60,10 @@ func (c *WSClient) readPump() {
 			}
 			break
 		}
-
 		var msg Message
 		if err := json.Unmarshal(message, &msg); err != nil {
 			continue
 		}
-
 	}
 }
 func (c *WSClient) writePump() {
@@ -96,6 +90,7 @@ func (c *WSClient) writePump() {
 			if err != nil {
 				return
 			}
+			log.Print(sendmessage)
 			w.Write(sendmessage)
 
 			// 批量发送积压消息

@@ -2,7 +2,6 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/woshilaixuex/csd_chat_backend/app/message/hander"
 	"github.com/woshilaixuex/csd_chat_backend/app/message/ws"
 	"github.com/woshilaixuex/csd_chat_backend/app/util/middleware"
 )
@@ -17,6 +16,5 @@ func RouterRegister(r *gin.Engine) {
 
 	chatGroup := r.Group("/chat")
 	chatGroup.Use(middleware.TokenAuthMiddleware())
-	chatGroup.POST("/private/send", hander.PrivateChatHander)
 	chatGroup.GET("/private/ws", ws.WebSocketHandler)
 }

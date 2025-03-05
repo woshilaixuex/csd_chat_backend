@@ -1,7 +1,6 @@
 package ws
 
 import (
-	"context"
 	"sync"
 	"time"
 
@@ -11,7 +10,7 @@ import (
 /*
  * @Author: Elyr1c
  * @Email: linyugang7295@gmail.com
- * @Description:
+ * @Description: 链接和管理核心
  * @Date: 2025-03-02 21:50
  */
 var (
@@ -33,39 +32,53 @@ const (
 type MType int
 
 type Message struct {
-	FromID  int64
-	SendID  int64
+	FromID  uint64
+	SendID  uint64
 	Content []byte
 	Type    MType
 }
 
 type WSClient struct {
-	WSID     int64
+	WSID     uint64
 	Conn     *websocket.Conn
-	Ctx      context.Context
 	Send     chan []byte
 	LastSeen time.Time
 }
 
+func NewWSClinet(userID uint64, conn *websocket.Conn) *WSClient {
+	return &WSClient{
+		WSID:     userID,
+		Conn:     conn,
+		Send:     make(chan []byte, 20),
+		LastSeen: time.Now(),
+	}
+}
 func (ws *WSClient) Close() {
+	if ws.Conn != nil {
+		_ = ws.Conn.Close()
+	}
+
+	close(ws.Send)
 
 }
 
 type WSClientManager struct {
-	clients    map[int64]*WSClient
+	clients    map[uint64]*WSClient
 	chat       chan *Message // 广播通道
 	register   chan *WSClient
 	unregister chan *WSClient
+	stop       chan struct{}
 	c_num      int
 	sync.RWMutex
 }
 
 func NewWSClientManager() *WSClientManager {
 	return &WSClientManager{
-		clients:    make(map[int64]*WSClient),
+		clients:    make(map[uint64]*WSClient),
 		chat:       make(chan *Message),
 		register:   make(chan *WSClient),
 		unregister: make(chan *WSClient),
+		stop:       make(chan struct{}),
 		c_num:      0,
 	}
 }

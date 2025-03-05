@@ -78,6 +78,9 @@ func ParseUserTokem(token *jwt.Token) (interface{}, error) {
 }
 
 func ParseJwtToken(tokenString string) (uint64, error) {
+	if tokenOption == nil {
+		InitJwtToken()
+	}
 	token, err := jwt.Parse(tokenString, ParseUserTokem)
 
 	if err != nil {

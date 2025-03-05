@@ -2,6 +2,7 @@ package ws
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"time"
 )
@@ -9,7 +10,7 @@ import (
 /*
  * @Author: Elyr1c
  * @Email: linyugang7295@gmail.com
- * @Description:
+ * @Description: 链接管理器
  * @Date: 2025-03-02 22:14
  */
 var DefaultClientManager = NewWSClientManager()
@@ -25,15 +26,32 @@ func (wsm *WSClientManager) Start() {
 			wsm.handleUnregister(client)
 		case msg := <-wsm.chat:
 			wsm.handleChat(msg)
+		case <-wsm.stop:
+			fmt.Println("WSClientManager stopping...")
+			return
 		}
 	}
 }
+
 func (wsm *WSClientManager) SendChat(msg *Message) {
 	wsm.chat <- msg
 }
-func (wsm *WSClientManager) Close() {
 
+func (manager *WSClientManager) Close() {
+	manager.Lock()
+	defer manager.Unlock()
+
+	for _, client := range manager.clients {
+		client.Close()
+	}
+	manager.clients = make(map[uint64]*WSClient)
+
+	close(manager.stop)
+	close(manager.chat)
+	close(manager.register)
+	close(manager.unregister)
 }
+
 func (wsm *WSClientManager) handleRegister(client *WSClient) {
 	wsm.Lock()
 	defer wsm.Unlock()
