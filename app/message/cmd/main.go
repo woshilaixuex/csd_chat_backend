@@ -18,6 +18,7 @@ import (
 func main() {
 	r := gin.Default()
 	router.RouterRegister(r)
+
 	go ws.DefaultClientManager.Start()
 	defer ws.DefaultClientManager.Close()
 	if err := r.Run(":" + "9090"); err != nil {

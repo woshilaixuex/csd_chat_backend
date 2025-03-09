@@ -2,6 +2,7 @@ package ws
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -62,12 +63,15 @@ func (c *WSClient) readPump() {
 		}
 		var msg Message
 		if err := json.Unmarshal(message, &msg); err != nil {
+			fmt.Print(err)
 			continue
 		}
+		fmt.Println(msg)
+		DefaultClientManager.SendChat(&msg)
 	}
 }
 func (c *WSClient) writePump() {
-	ticker := time.NewTicker(maxLinkTime)
+	ticker := time.NewTicker(maxPingTime)
 	defer func() {
 		ticker.Stop()
 		c.Conn.Close()
@@ -86,13 +90,13 @@ func (c *WSClient) writePump() {
 			if err != nil {
 				return
 			}
-			sendmessage, err := json.Marshal(message)
-			if err != nil {
-				return
-			}
-			log.Print(sendmessage)
-			w.Write(sendmessage)
 
+			w.Write(message)
+			var msg Message
+			if err := json.Unmarshal(message, &msg); err != nil {
+				fmt.Print(err)
+			}
+			fmt.Println(msg)
 			// 批量发送积压消息
 			n := len(c.Send)
 			for i := 0; i < n; i++ {

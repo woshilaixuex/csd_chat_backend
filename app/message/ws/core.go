@@ -14,10 +14,10 @@ import (
  * @Date: 2025-03-02 21:50
  */
 var (
-	maxClient      int   = 300             // 最大连接数
-	maxLinkTimeNum       = 6               // 重试次数
-	maxLinkTime          = time.Minute * 5 // 最大重试时长
-	maxPingTime          = time.Second * 20
+	maxClient      int   = 300              // 最大连接数
+	maxLinkTimeNum       = 6                // 重试次数
+	maxLinkTime          = time.Minute * 5  // 最大链接时长
+	maxPingTime          = time.Second * 20 // 最大尝试时长
 	maxMessageSize int64 = 512
 	Line                 = []byte{'\n'}
 	Space                = []byte{' '}
@@ -32,10 +32,10 @@ const (
 type MType int
 
 type Message struct {
-	FromID  uint64
-	SendID  uint64
-	Content []byte
-	Type    MType
+	FromID  uint64 `json:"fromId"`
+	SendID  uint64 `json:"sendId"`
+	Content []byte `json:"content"`
+	Type    MType  `json:"type"`
 }
 
 type WSClient struct {

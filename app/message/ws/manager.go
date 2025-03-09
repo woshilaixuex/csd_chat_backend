@@ -103,7 +103,8 @@ func (wsm *WSClientManager) handleChat(msg *Message) {
 	userID := msg.SendID
 	client, exist := wsm.clients[userID]
 	if !exist {
-		log.Fatalf("unfound client id : %v", userID)
+		log.Printf("unfound client id : %v\n", userID)
+		return
 	}
 	sendMsg, err := json.Marshal(msg)
 	if err != nil {

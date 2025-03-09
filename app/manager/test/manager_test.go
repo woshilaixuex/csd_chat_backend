@@ -88,7 +88,7 @@ func TestCopier(t *testing.T) {
 func TestGetJwtToken(t *testing.T) {
 	xtoken.InitJwtToken()
 
-	userId := uint64(123456)
+	userId := uint64(1234562)
 	token, err := xtoken.GetJwtToken(userId)
 	t.Log(token)
 	assert.NoError(t, err)
