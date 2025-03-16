@@ -2,7 +2,7 @@ package manager
 
 import (
 	_ "github.com/go-sql-driver/mysql"
-	manager_config "github.com/woshilaixuex/csd_chat_backend/app/manager/config"
+	"github.com/woshilaixuex/csd_chat_backend/app/util/xconfig"
 	"xorm.io/xorm"
 )
 
@@ -16,8 +16,8 @@ var engine *xorm.Engine
 
 func InitEngine() error {
 	var err error
-	config := manager_config.ConfigsMap[manager_config.OrmConifgName]
-	configEntity, ok := config.(*manager_config.OrmConfig)
+	config := xconfig.ConfigsMap[xconfig.OrmConifgName]
+	configEntity, ok := config.(*xconfig.OrmConfig)
 	if !ok {
 		return err
 	}

@@ -6,14 +6,14 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/jinzhu/copier"
-	manager_config "github.com/woshilaixuex/csd_chat_backend/app/manager/config"
 	"github.com/woshilaixuex/csd_chat_backend/app/util"
+	"github.com/woshilaixuex/csd_chat_backend/app/util/xconfig"
 )
 
 /*
  * @Author: Elyr1c
  * @Email: linyugang7295@gmail.com
- * @Description: token生成器
+ * @Description: token生成器，使用记得初始化一下
  * @Date: 2025-02-19 20:25
  */
 type TokenOption struct {
@@ -34,12 +34,12 @@ func DefaultToken() {
 }
 func InitJwtToken() {
 	tokenOption = new(TokenOption)
-	config := manager_config.ConfigsMap[manager_config.TokenConfigName]
+	config := xconfig.ConfigsMap[xconfig.TokenConfigName]
 	if config == nil {
 		DefaultToken()
 		return
 	}
-	configEntity, ok := config.(*manager_config.TokenConfig)
+	configEntity, ok := config.(*xconfig.TokenConfig)
 	if !ok {
 		panic("")
 	}

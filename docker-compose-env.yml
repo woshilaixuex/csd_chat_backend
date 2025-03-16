@@ -49,7 +49,24 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+  etcd:
+    image: bitnami/etcd:3.5.0
+    command:
+      - etcd
+      - --name=etcd-node1
+      - --data-dir=/var/lib/etcd
+      - --listen-client-urls=http://0.0.0.0:2379
+      - --advertise-client-urls=http://etcd:2379
+      - --initial-cluster-state=new
+    volumes:
+      - ./data/etcd:/var/lib/etcd
+    healthcheck:
+      test: ["CMD", "etcdctl", "--endpoints=localhost:2379", "endpoint", "health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 networks:
   csdchat-network:
     driver: bridge
+    attachable: true

@@ -26,6 +26,7 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+// websocket注册链接
 func WebSocketHandler(c *gin.Context) {
 	userID := c.MustGet("userID").(uint64)
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
@@ -70,6 +71,7 @@ func (c *WSClient) readPump() {
 		DefaultClientManager.SendChat(&msg)
 	}
 }
+
 func (c *WSClient) writePump() {
 	ticker := time.NewTicker(maxPingTime)
 	defer func() {

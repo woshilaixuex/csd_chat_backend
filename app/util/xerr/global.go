@@ -8,10 +8,20 @@ package xerr
  */
 
 // 定义一些业务常见的错误
+
 var (
-	UnDefinedError = NewAppError(0000, "undefind err")
-	UserNotExist   = NewAppError(1001, "user is not exist")
-	UserExists     = NewAppError(1002, "user already exists")
-	TokenExpire    = NewAppError(1003, "token was expired")
-	InviteError    = NewAppError(1004, "invite code is error")
+	UnDefinedError = NewAppError(00000, "undefind err")
+	OtherError     = NewAppError(00001, "other err")
+
+	UserNotExist = NewAppError(01001, "user is not exist")
+	UserExists   = NewAppError(01002, "user already exists")
+	TokenExpire  = NewAppError(01003, "token was expired")
+	InviteError  = NewAppError(01004, "invite code is error")
+
+	// Etcd 工具包
+	EtcdBackGroundError   = NewAppError(02000, "etcd service err")            // Etcd 模块默认初始化错误
+	EtcdErrNotInitialized = NewAppError(02001, "etcd client not initialized") // Etcd 未初始化
+	EtcdErrInvalidConfig  = NewAppError(02002, "invalid etcd config ")        // Etcd 空配置
+	// Redis 工具包
+	RedisBackGroundError = NewAppError(0300, "etcd service err") // Redis默认初始错误
 )

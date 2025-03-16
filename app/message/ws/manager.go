@@ -99,6 +99,7 @@ func (m *WSClientManager) connectionGC() {
 		m.Unlock()
 	}
 }
+
 func (wsm *WSClientManager) handleChat(msg *Message) {
 	userID := msg.SendID
 	client, exist := wsm.clients[userID]

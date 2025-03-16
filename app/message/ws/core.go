@@ -32,10 +32,18 @@ const (
 type MType int
 
 type Message struct {
-	FromID  uint64 `json:"fromId"`
-	SendID  uint64 `json:"sendId"`
+	FromID  uint64 `json:"from_id"`
+	SendID  uint64 `json:"send_id"`
 	Content []byte `json:"content"`
 	Type    MType  `json:"type"`
+}
+type MessageResp struct {
+	MessageID  uint64 `json:"message_id"`
+	TimeSeries uint64 `json:"time_series"`
+	FromID     uint64 `json:"from_id"`
+	SendID     uint64 `json:"send_id"`
+	Content    []byte `json:"content"`
+	Type       MType  `json:"type"`
 }
 
 type WSClient struct {

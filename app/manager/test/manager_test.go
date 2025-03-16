@@ -6,11 +6,11 @@ import (
 	"github.com/jinzhu/copier"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
-	"github.com/woshilaixuex/csd_chat_backend/app/manager/config"
 	"github.com/woshilaixuex/csd_chat_backend/app/manager/internal/user"
 	"github.com/woshilaixuex/csd_chat_backend/app/util/model/manager"
 	"github.com/woshilaixuex/csd_chat_backend/app/util/security/encryption"
 	"github.com/woshilaixuex/csd_chat_backend/app/util/security/xtoken"
+	"github.com/woshilaixuex/csd_chat_backend/app/util/xconfig"
 	"github.com/woshilaixuex/csd_chat_backend/app/util/xredis"
 )
 
@@ -40,7 +40,7 @@ func TestOrmConfigBind(t *testing.T) {
 	err := setupViper()
 	t.Log(err)
 	// 创建 OrmConfig 实例
-	ormConfig := config.NewOrmConfig()
+	ormConfig := xconfig.NewOrmConfig()
 
 	// 调用 Bind 方法进行绑定
 	err = ormConfig.Bind()

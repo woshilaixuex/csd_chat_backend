@@ -1,4 +1,4 @@
-package config
+package xconfig
 
 import (
 	"github.com/spf13/viper"
