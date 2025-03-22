@@ -15,6 +15,8 @@ type EtcdConfig struct {
 	Name      string
 	Endpoints []string
 	Time      time.Duration
+	UserName  string
+	Password  string
 	Method    string
 }
 

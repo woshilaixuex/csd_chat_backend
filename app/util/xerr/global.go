@@ -22,6 +22,9 @@ var (
 	EtcdBackGroundError   = NewAppError(02000, "etcd service err")            // Etcd 模块默认初始化错误
 	EtcdErrNotInitialized = NewAppError(02001, "etcd client not initialized") // Etcd 未初始化
 	EtcdErrInvalidConfig  = NewAppError(02002, "invalid etcd config ")        // Etcd 空配置
+	EtcdErrNoKey          = NewAppError(02003, "no key provided")
+	EtcdErrNoValue        = NewAppError(02004, "no value provided")
 	// Redis 工具包
-	RedisBackGroundError = NewAppError(0300, "etcd service err") // Redis默认初始错误
+	RedisBackGroundError = NewAppError(03000, "etcd service err") // Redis默认初始错误
+
 )
