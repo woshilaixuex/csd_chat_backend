@@ -1,7 +1,7 @@
 package xetcd
 
 import (
-	"log"
+	"log/slog"
 	"sync"
 	"time"
 )
@@ -17,7 +17,6 @@ const minHeartBeatTime = 500 * time.Millisecond
 // Registrar registers service instance liveness information to etcd.
 type Registrar struct {
 	client  Client
-	loger   log.Logger
 	quitmtx sync.Mutex
 	quit    chan struct{}
 }
@@ -38,6 +37,11 @@ type TTLOption struct {
 	ttl       time.Duration // e.g. time.Second * 10
 }
 
+var defaultTTLoption = &TTLOption{
+	heartbeat: time.Second * 3,
+	ttl:       time.Second * 10,
+}
+
 // NewTTLOption returns a TTLOption that contains proper TTL settings. Heartbeat
 // is used to refresh the lease of the key periodically; its value should be at
 // least 500ms. TTL defines the lease of the key; its value should be
@@ -54,5 +58,36 @@ func NewTTLOption(heartbeat, ttl time.Duration) *TTLOption {
 	return &TTLOption{
 		heartbeat: heartbeat,
 		ttl:       ttl,
+	}
+}
+
+func NewRegistrar(client Client) *Registrar {
+	return &Registrar{
+		client: client,
+	}
+}
+
+func (r *Registrar) Register(service Service) {
+	if err := r.client.Register(service); err != nil {
+		return
+	}
+	if service.TTL != nil {
+		slog.Info("etcd", "action", "register", "lease", r.client.LeaseID())
+	} else {
+		slog.Info("etcd", "action", "register")
+	}
+}
+func (r *Registrar) Deregister(service Service) {
+	if err := r.client.Deregister(service); err != nil {
+		slog.Error("etcd", "action", "deregister", "err", err.Error())
+	} else {
+		slog.Info("etcd", "action", "deregister")
+	}
+
+	r.quitmtx.Lock()
+	defer r.quitmtx.Unlock()
+	if r.quit != nil {
+		close(r.quit)
+		r.quit = nil
 	}
 }

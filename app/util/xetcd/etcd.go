@@ -1,6 +1,7 @@
 package xetcd
 
 import (
+	"log"
 	"sync"
 	"time"
 
@@ -24,9 +25,6 @@ var (
 	etcdOnce sync.Once
 )
 
-type Instancer struct {
-}
-
 // ClientOptions defines options for the etcd client. All values are optional.
 // If any duration is not specified, a default of 3 seconds will be used.
 type ClientOptions struct {
@@ -43,4 +41,17 @@ type ClientOptions struct {
 
 	Username string
 	Password string
+}
+
+// 实现对etcd检测变化的应略
+type Instancer struct {
+	client Client
+	prefix string
+	logger log.Logger
+	quitc  chan struct{}
+}
+
+// Stop terminates the Instancer.
+func (s *Instancer) Stop() {
+	close(s.quitc)
 }
