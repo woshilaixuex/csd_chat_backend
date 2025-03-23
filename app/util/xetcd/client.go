@@ -2,14 +2,16 @@ package xetcd
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
-	"log"
+	"log/slog"
 	"time"
 
-	"github.com/jinzhu/copier"
 	"github.com/woshilaixuex/csd_chat_backend/app/util/xconfig"
 	"github.com/woshilaixuex/csd_chat_backend/app/util/xerr"
+	"go.etcd.io/etcd/client/pkg/v3/transport"
 	clientv3 "go.etcd.io/etcd/client/v3"
+	"google.golang.org/grpc"
 )
 
 /*
@@ -59,19 +61,96 @@ type client struct {
 	leaser clientv3.Lease
 }
 
-func NewClinet() (Client, error) {
+// ClientOptions defines options for the etcd client. All values are optional.
+// If any duration is not specified, a default of 3 seconds will be used.
+type ClientOptions struct {
+	Cert          string
+	Key           string
+	CACert        string
+	DialTimeout   time.Duration
+	DialKeepAlive time.Duration
+
+	// DialOptions is a list of dial options for the gRPC client (e.g., for interceptors).
+	// For example, pass grpc.WithBlock() to block until the underlying connection is up.
+	// Without this, Dial returns immediately and connecting the server happens in background.
+	DialOptions []grpc.DialOption
+}
+
+func NewClinet(ctx context.Context, options ClientOptions) (Client, error) {
+	// 自定义错误与获取配置信息
 	initErr := xerr.EtcdBackGroundError
 	config := xconfig.ConfigsMap[xconfig.EtcdConfigName]
 	configEntity, ok := config.(*xconfig.EtcdConfig)
 	if !ok {
 		return nil, initErr.Wrap(fmt.Errorf("failed to cast config to EtcdConfig"))
 	}
+	// 加密协议配置
+	var cli *clientv3.Client
+	var err error
+	switch configEntity.Method {
+	case xconfig.WITHUSERSTL:
+		cli, err = NewClinetWithTLS(ctx, configEntity, options)
+		if err != nil {
+			return nil, initErr.Wrap(err)
+		}
+	case xconfig.WITHUSERPASSWORD:
+		cli, err = NewClinetWithPassword(ctx, configEntity)
+		if err != nil {
+			return nil, initErr.Wrap(err)
+		}
+	default:
+		slog.Error("etcd", "action init", xerr.EtcdErrUnknownMethod.Error())
+		return nil, initErr.Wrap(xerr.EtcdErrUnknownMethod)
+	}
 
-	var etcdConfig clientv3.Config
-	copier.Copy(etcdConfig, configEntity)
-	clientv3.New(etcdConfig)
-
-	return &client{}, initErr.Submit()
+	return &client{
+		cli: cli,
+		ctx: ctx,
+		kv:  clientv3.NewKV(cli),
+	}, initErr.Submit()
+}
+func NewClinetWithTLS(ctx context.Context, config *xconfig.EtcdConfig, options ClientOptions) (*clientv3.Client, error) {
+	backErr := xerr.EtcdBackGroundError
+	var tlscfg *tls.Config
+	var err error
+	if options.Cert != "" && options.Key != "" {
+		tlsInfo := transport.TLSInfo{
+			CertFile:      options.Cert,
+			KeyFile:       options.Key,
+			TrustedCAFile: options.CACert,
+		}
+		tlscfg, err = tlsInfo.ClientConfig()
+		if err != nil {
+			return nil, backErr.Wrap(err)
+		}
+	}
+	cli, err := clientv3.New(clientv3.Config{
+		Context:           ctx,
+		Endpoints:         config.Endpoints,
+		DialTimeout:       options.DialTimeout,
+		DialKeepAliveTime: options.DialKeepAlive,
+		DialOptions:       options.DialOptions,
+		TLS:               tlscfg,
+		Username:          config.UserName,
+		Password:          config.Password,
+	})
+	if err != nil {
+		return nil, backErr.Wrap(err)
+	}
+	return cli, backErr.Submit()
+}
+func NewClinetWithPassword(ctx context.Context, config *xconfig.EtcdConfig) (*clientv3.Client, error) {
+	backErr := xerr.EtcdBackGroundError
+	cli, err := clientv3.New(clientv3.Config{
+		Context:   ctx,
+		Endpoints: config.Endpoints,
+		Username:  config.UserName,
+		Password:  config.Password,
+	})
+	if err != nil {
+		return nil, backErr.Wrap(err)
+	}
+	return cli, backErr.Submit()
 }
 
 // 解析bytes value值转成string
@@ -140,7 +219,7 @@ func (c *client) Register(s Service) error {
 		s.Value,
 		clientv3.WithLease(c.leaseID),
 	)
-	log.Printf("debug: register serivce:%s", string(putResponse.PrevKv.Value))
+	slog.Info("etcd", "action", "register", "put responce", string(putResponse.PrevKv.Value))
 	if err != nil {
 		return backErr.Wrap(err)
 	}

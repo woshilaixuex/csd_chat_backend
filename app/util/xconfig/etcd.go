@@ -11,13 +11,18 @@ import "time"
 
 var EtcdConfigName = "etcd"
 
+const (
+	WITHUSERSTL = 1 << iota
+	WITHUSERPASSWORD
+)
+
 type EtcdConfig struct {
 	Name      string
 	Endpoints []string
 	Time      time.Duration
 	UserName  string
 	Password  string
-	Method    string
+	Method    int
 }
 
 func NewEtcdConfig() *EtcdConfig {

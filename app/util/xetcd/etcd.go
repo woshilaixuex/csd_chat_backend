@@ -4,8 +4,6 @@ import (
 	"log"
 	"sync"
 	"time"
-
-	"google.golang.org/grpc"
 )
 
 /*
@@ -24,24 +22,6 @@ const (
 var (
 	etcdOnce sync.Once
 )
-
-// ClientOptions defines options for the etcd client. All values are optional.
-// If any duration is not specified, a default of 3 seconds will be used.
-type ClientOptions struct {
-	Cert          string
-	Key           string
-	CACert        string
-	DialTimeout   time.Duration
-	DialKeepAlive time.Duration
-
-	// DialOptions is a list of dial options for the gRPC client (e.g., for interceptors).
-	// For example, pass grpc.WithBlock() to block until the underlying connection is up.
-	// Without this, Dial returns immediately and connecting the server happens in background.
-	DialOptions []grpc.DialOption
-
-	Username string
-	Password string
-}
 
 // 实现对etcd检测变化的应略
 type Instancer struct {

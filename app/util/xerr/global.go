@@ -24,6 +24,7 @@ var (
 	EtcdErrInvalidConfig  = NewAppError(02002, "invalid etcd config ")        // Etcd 空配置
 	EtcdErrNoKey          = NewAppError(02003, "no key provided")
 	EtcdErrNoValue        = NewAppError(02004, "no value provided")
+	EtcdErrUnknownMethod  = NewAppError(02005, "unknown method")
 	// Redis 工具包
 	RedisBackGroundError = NewAppError(03000, "etcd service err") // Redis默认初始错误
 

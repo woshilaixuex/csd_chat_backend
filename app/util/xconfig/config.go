@@ -1,7 +1,9 @@
 package xconfig
 
 import (
-	"log"
+	"github.com/spf13/viper"
+	_ "github.com/woshilaixuex/csd_chat_backend/app/util/xlog"
+	"golang.org/x/exp/slog"
 )
 
 /*
@@ -25,7 +27,7 @@ func AddConfigs(configs ...Config) {
 	for _, config := range configs {
 		err := config.Bind()
 		if err != nil {
-			log.Fatalln("Failed to bind config:", err)
+			slog.Error("config", "err", err.Error())
 			panic(err)
 		}
 		ConfigsMap[config.GetConfigName()] = config
@@ -33,18 +35,19 @@ func AddConfigs(configs ...Config) {
 }
 
 // 初始化 Viper 配置
-// func init() {
-// 	viper.SetConfigName("config")
-// 	viper.SetConfigType("yaml")
-// 	viper.AddConfigPath("../")
-// 	err := viper.ReadInConfig()
-// 	if err != nil {
-// 		log.Fatalf("Failed to read config file: %v", err)
-// 	} else {
-// 		log.Println("Config file loaded successfully")
-// 	}
+func init() {
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath("../../")
+	err := viper.ReadInConfig()
+	if err != nil {
+		slog.Error("config", "err", err.Error())
+	} else {
+		slog.Info("Config file loaded successfully")
+	}
 
-// 	AddConfigs(NewOrmConfig(),
-// 		NewRedisConfig(),
-// 		NewTokenConfig())
-// }
+	AddConfigs(NewOrmConfig(),
+		NewRedisConfig(),
+		NewTokenConfig(),
+		NewEtcdConfig())
+}
