@@ -20,6 +20,6 @@ func init() {
 			return a
 		},
 	}
-	handler := slog.NewJSONHandler(os.Stdout, opts)
+	handler := slog.NewTextHandler(os.Stdout, opts)
 	slog.SetDefault(slog.New(handler))
 }

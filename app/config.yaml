@@ -1,0 +1,20 @@
+database:
+  name: "chat_manager"
+  type: "mysql"
+  url: "root:123456@tcp(127.0.0.1:13306)/manager"
+redis:
+  name: "chat_manager"  
+  address: "0.0.0.0:16379"
+  password: ""
+  db: 0 
+  pool_size: 10 
+  min_idle: 5  
+  max_idle: 10  
+  timeout: "5s"
+etcd:
+  name: "chat_message"
+  endpoints: "116.198.204.233:2379"
+  time: 10
+  username: "root"
+  password: "Guet@210530"
+  method: 2

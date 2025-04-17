@@ -20,9 +20,9 @@ type AppError struct {
 
 func (xerr *AppError) Error() string {
 	if xerr.Err != nil {
-		return fmt.Sprintf("Code: %d, Message: %s, Inner Error: | %s", xerr.Code, xerr.Message, xerr.Err.Error())
+		return fmt.Sprintf("Code: %v, Message: %s, Inner Error: | %s", xerr.Code, xerr.Message, xerr.Err.Error())
 	}
-	return fmt.Sprintf("Code: %d, Message: %s", xerr.Code, xerr.Message)
+	return fmt.Sprintf("Code: %v, Message: %s", xerr.Code, xerr.Message)
 }
 
 // 对比错误
@@ -84,9 +84,9 @@ func (xerr *AppError) Wrap(upe error) *AppError {
 
 func (xerr *AppError) Submit() error {
 	if xerr.Err != nil {
-		return nil
+		return xerr
 	}
-	return xerr
+	return nil
 }
 
 // 其他工具提供的错误
@@ -102,5 +102,6 @@ func NewAppError(code uint, message string) *AppError {
 	return &AppError{
 		Code:    code,
 		Message: message,
+		Err:     nil,
 	}
 }

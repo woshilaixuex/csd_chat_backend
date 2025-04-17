@@ -12,6 +12,8 @@ import (
 	"go.etcd.io/etcd/client/pkg/v3/transport"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 /*
@@ -26,7 +28,7 @@ type Client interface {
 	// GetEntries queries the given prefix in etcd and returns a slice
 	// containing the values of all keys found, recursively, underneath that
 	// prefix.
-	GetEntries(prefix string) ([]string, error)
+	GetServerEntries(prefix string) ([]string, error)
 
 	// 监听prefix前缀变化
 	WatchPrefix(prefix string, ch chan struct{})
@@ -55,10 +57,9 @@ type client struct {
 
 	// leaseID will be 0 (clientv3.NoLease) if a lease was not created
 	leaseID clientv3.LeaseID
-
+	// 客户端的心跳保持
 	kpAliveCh <-chan *clientv3.LeaseKeepAliveResponse
-	// Lease interface instance, used to leverage Lease.Close()
-	leaser clientv3.Lease
+	leaser    clientv3.Lease
 }
 
 // ClientOptions defines options for the etcd client. All values are optional.
@@ -76,25 +77,48 @@ type ClientOptions struct {
 	DialOptions []grpc.DialOption
 }
 
-func NewClinet(ctx context.Context, options ClientOptions) (Client, error) {
+// 初始化测试连接异常
+func Ping(cli *clientv3.Client) error {
+	initErr := xerr.EtcdBackGroundError
+	_, err := cli.Get(context.Background(), "health-check")
+	if err == nil || status.Code(err) == codes.NotFound {
+		slog.Info("etcd", "ping", "etcd connected successfully")
+	} else {
+		return initErr.Wrap(err)
+	}
+	return initErr.Submit()
+}
+
+func NewClinet(ctx context.Context, options ...ClientOptions) (Client, error) {
 	// 自定义错误与获取配置信息
 	initErr := xerr.EtcdBackGroundError
 	config := xconfig.ConfigsMap[xconfig.EtcdConfigName]
 	configEntity, ok := config.(*xconfig.EtcdConfig)
+	slog.Debug("etcd", "config entity", configEntity)
+
 	if !ok {
 		return nil, initErr.Wrap(fmt.Errorf("failed to cast config to EtcdConfig"))
 	}
-	// 加密协议配置
+
+	if len(configEntity.Endpoints)%2 != 1 {
+		return nil, initErr.Wrap(xerr.EtcdErrConfigSplitBrain)
+	}
 	var cli *clientv3.Client
+
 	var err error
+
 	switch configEntity.Method {
 	case xconfig.WITHUSERSTL:
-		cli, err = NewClinetWithTLS(ctx, configEntity, options)
+		if options == nil {
+			return nil, initErr.Wrap(err)
+		}
+		cli, err = NewClinetWithTLS(ctx, configEntity, options[0])
 		if err != nil {
 			return nil, initErr.Wrap(err)
 		}
 	case xconfig.WITHUSERPASSWORD:
 		cli, err = NewClinetWithPassword(ctx, configEntity)
+		slog.Debug("etcd", "action init with password", err)
 		if err != nil {
 			return nil, initErr.Wrap(err)
 		}
@@ -102,7 +126,10 @@ func NewClinet(ctx context.Context, options ClientOptions) (Client, error) {
 		slog.Error("etcd", "action init", xerr.EtcdErrUnknownMethod.Error())
 		return nil, initErr.Wrap(xerr.EtcdErrUnknownMethod)
 	}
-
+	err = Ping(cli)
+	if err != nil {
+		return nil, initErr.Wrap(err)
+	}
 	return &client{
 		cli: cli,
 		ctx: ctx,
@@ -148,13 +175,14 @@ func NewClinetWithPassword(ctx context.Context, config *xconfig.EtcdConfig) (*cl
 		Password:  config.Password,
 	})
 	if err != nil {
+		slog.Debug("etcd", "new client with password", err.Error())
 		return nil, backErr.Wrap(err)
 	}
 	return cli, backErr.Submit()
 }
 
 // 解析bytes value值转成string
-func (c *client) GetEntries(prefixKey string) ([]string, error) {
+func (c *client) GetServerEntries(prefixKey string) ([]string, error) {
 	backErr := xerr.EtcdBackGroundError
 	resp, err := c.kv.Get(c.ctx, prefixKey, clientv3.WithPrefix())
 	if err != nil {
@@ -182,8 +210,11 @@ func (c *client) WatchPrefix(prefix string, ch chan struct{}) {
 }
 
 func (c *client) Register(s Service) error {
-	backErr := xerr.EtcdBackGroundError
 
+	backErr := xerr.EtcdBackGroundError
+	if c.cli == nil {
+		return backErr.Wrap(xerr.EtcdErrClientNotInitialized)
+	}
 	if s.Key == "" {
 		return backErr.Wrap(xerr.EtcdErrNoKey)
 	}
@@ -213,13 +244,14 @@ func (c *client) Register(s Service) error {
 		return backErr.Wrap(err)
 	}
 	c.leaseID = grantResp.ID
-	putResponse, err := c.kv.Put(
+	putResonse, err := c.kv.Put(
 		c.ctx,
 		s.Key,
 		s.Value,
 		clientv3.WithLease(c.leaseID),
 	)
-	slog.Info("etcd", "action", "register", "put responce", string(putResponse.PrevKv.Value))
+	// fmt.Print(putResonse)
+	slog.Info("etcd", "action", "register", "put responce", putResonse)
 	if err != nil {
 		return backErr.Wrap(err)
 	}
