@@ -16,6 +16,7 @@ import (
  * @Description: token生成器，使用记得初始化一下
  * @Date: 2025-02-19 20:25
  */
+
 type TokenOption struct {
 	SecretKey    string
 	AccessExpire int64 // 单位：/s

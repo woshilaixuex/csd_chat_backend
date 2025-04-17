@@ -51,20 +51,23 @@ services:
       retries: 3
   etcd:
     image: bitnami/etcd:3.5.0
-    command:
-      - etcd
-      - --name=etcd-node1
-      - --data-dir=/var/lib/etcd
-      - --listen-client-urls=http://0.0.0.0:2379
-      - --advertise-client-urls=http://etcd:2379
-      - --initial-cluster-state=new
+    container_name: etcd-linux
+
+    environment:
+      - "ETCD_ADVERTISE_CLIENT_URLS=http://0.0.0.0:2379"
+      - "ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379"
+      - "ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380"
+      - "ETCD_INITIAL_ADVERTISE_PEER_URLS=http://0.0.0.0:2380"
+      
+      - "ALLOW_NONE_AUTHENTICATION=no"
+      - "ETCD_INITIAL_CLUSTER=node1=http://0.0.0.0:2380"
+      - "ETCD_NAME=node1"
+      - "ETCD_DATA_DIR=/opt/bitnami/etcd/data"
     volumes:
-      - ./data/etcd:/var/lib/etcd
-    healthcheck:
-      test: ["CMD", "etcdctl", "--endpoints=localhost:2379", "endpoint", "health"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
+      - /opt/etcd/data:/var/lib/etcd         # 确保目录权限为777[3](@ref)
+    ports:
+      - "2379:2379"
+      - "2380:2380"
 
 networks:
   csdchat-network:
